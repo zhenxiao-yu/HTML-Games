@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+	<meta charset="utf-8">
+	<meta name='description' content="A simple quizing app">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Easy Quiz UI</title>
+	<link href="quiz.css" rel="stylesheet" type="text/css">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<div id="wrap">
+		<div class='quiz' id="quiz-area">
+			<div class='stem' id="stem"></div>
+			<div class='choice-flexbox'>
+				<div class="options" id="option0"></div>
+				<div class="options" id="option1"></div>
+				<div class="options" id="option2"></div>
+				<div class="options" id="option3"></div>
+				<div class="options" id="option4"></div>
+			</div>
+
+			<div class="progress">
+				<div><progress id="progress" max="100" value="0"></progress></div>
+				<div>Your progress</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		function Question(stem, options, ans) {
+			this.stem = stem;
+			this.options = options;
+			this.ans = ans
+		}
+
+		Question.prototype.checkAns = function (choice) {
+			return (choice === this.ans);
+		}
+
+		function Quiz(questionBank) {
+			this.points = 0;
+			this.questionBank = questionBank;
+			this.questionNo = 0;
+		};
+
+		Quiz.prototype.getCurrent = function () {
+			return this.questionBank[this.questionNo];
+		};
+
+		Quiz.prototype.isEnded = function () {
+			return this.questionNo == this.questionBank.length;
+		};
+
+		Quiz.prototype.evaluateAnswer = function (ans) {
+			if (this.getCurrent().checkAns(ans)) {
+				this.points++;
+			};
+			this.questionNo++;
+		}
+
+		function createQuestion() {
+			if (quiz.isEnded()) {
+				displayScores();
+			}
+			else {
+				var element = document.getElementById('stem');
+				element.innerHTML = quiz.getCurrent().stem;
+
+				for (i = 0; i < quiz.getCurrent().options.length; i++) {
+					var element = document.getElementById('option' + i);
+					element.innerHTML = quiz.getCurrent().options[i];
+					checkAns('option' + i, quiz.getCurrent().options[i]);
+					recordProgress();
+				};
+			}
+		};
+
+		function displayScores() {
+			var scoreString = "<h1>Scores</h1>";
+			scoreString += "<h3>You scored " + quiz.points + " out of " + quiz.questionBank.length + "</h3>"
+			scoreString += "<div id='update' class='update'>Re-take Quiz</div>"
+			var element = document.getElementById('quiz-area');
+			element.innerHTML = scoreString;
+
+			var reTake = document.getElementById('update');
+			reTake.onclick = function () {
+				update()
+			}
+		};
+
+		function checkAns(htmlId, ans) {
+			var element = document.getElementById(htmlId);
+			element.onclick = function () {
+				quiz.evaluateAnswer(ans);
+				createQuestion();
+			};
+		};
+
+		function setProgress() {
+			var element = document.getElementById('progress');
+			element.setAttribute('max', quiz.questionBank.length);
+		};
+
+		function recordProgress() {
+			var element = document.getElementById('progress');
+			element.setAttribute('value', quiz.questionNo);
+		}
+
+		function update() {
+			var renewHTML = '<div class="quiz" id="quiz-area"><div class="stem" id="stem"></div><div class="choice-flexbox"><div class="options" id="option0"></div><div class="options" id="option1"></div><div class="options" id="option2"></div><div class="options" id="option3"></div><div class="options" id="option4"></div></div>	<div class="progress"><div><progress id="progress" max="100" value="0"></progress></div><div>Your progress</div></div></div>'
+			var element = document.getElementById('wrap');
+			element.innerHTML = renewHTML
+
+			quiz.points = 0;
+			quiz.questionNo = 0;
+			createQuestion();
+			setProgress();
+		}
+		
+		var questions = [
+			new Question("Convert 7 to binary: ", ["1101", "0001", "1010", "0111", "1110"], "0111"),
+			new Question("Who became Prime Minister of Canada on November 4, 2015", ["Justin Trudeau", "Stephen Harper", "Joe Clark", "Brian Mulroney", "Kim Campbell"], "Justin Trudeau"),
+			new Question("Which country consumes the most chocolate per capita?", ["Italy", "Greece", "China", "US", "Switzerland"], "Switzerland"),
+			new Question("What is 3^3?", ["9", "27", "45", "18", "33"], "27"),
+			new Question("What’s the shortcut for the “copy” function on most computers", ["Ctrl z", "Ctrl a", "Ctrl v", "Ctrl c", "Ctrl w"], "Ctrl c")
+		]
+
+		var quiz = new Quiz(questions);
+
+		createQuestion();
+		setProgress();
+	</script>
+</body>
+
+</html>
